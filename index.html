@@ -7,24 +7,71 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    /* Base Body Setup */
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #0f172a;
-      color: #f8fafc;
       display: flex;
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
+      transition: background-color 0.3s, color 0.3s;
     }
 
-    /* Header */
+    /* ===================================================
+       THEME STYLES (Light / Default Slate / Dark)
+       =================================================== */
+
+    /* 1. LIGHT THEME (Default) */
+    body.theme-light {
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .theme-light header { background-color: #ffffff; border-bottom: 1px solid #e2e8f0; }
+    .theme-light .sidebar { background-color: #ffffff; border-right: 1px solid #e2e8f0; }
+    .theme-light input, .theme-light select { background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #0f172a; }
+    .theme-light .itinerary-card { background-color: #f1f5f9; border: 1px solid #e2e8f0; }
+    .theme-light .card-row { color: #64748b; }
+    .theme-light .card-row span { color: #0f172a; }
+    .theme-light .section-title { color: #64748b; }
+    .theme-light label { color: #334155; }
+
+    /* 2. SLATE NAVY THEME */
+    body.theme-default {
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+    .theme-default header { background-color: #1e293b; border-bottom: 1px solid #334155; }
+    .theme-default .sidebar { background-color: #1e293b; border-right: 1px solid #334155; }
+    .theme-default input, .theme-default select { background-color: #0f172a; border: 1px solid #334155; color: #f8fafc; }
+    .theme-default .itinerary-card { background-color: #0f172a; border: 1px solid #334155; }
+    .theme-default .card-row { color: #94a3b8; }
+    .theme-default .card-row span { color: #f8fafc; }
+    .theme-default .section-title { color: #94a3b8; }
+    .theme-default label { color: #cbd5e1; }
+
+    /* 3. DARK THEME (Pure OLED Black) */
+    body.theme-dark {
+      background-color: #000000;
+      color: #ffffff;
+    }
+    .theme-dark header { background-color: #121212; border-bottom: 1px solid #27272a; }
+    .theme-dark .sidebar { background-color: #121212; border-right: 1px solid #27272a; }
+    .theme-dark input, .theme-dark select { background-color: #000000; border: 1px solid #27272a; color: #ffffff; }
+    .theme-dark .itinerary-card { background-color: #18181b; border: 1px solid #27272a; }
+    .theme-dark .card-row { color: #a1a1aa; }
+    .theme-dark .card-row span { color: #ffffff; }
+    .theme-dark .section-title { color: #a1a1aa; }
+    .theme-dark label { color: #d4d4d8; }
+
+    /* ===================================================
+       LAYOUT STYLES
+       =================================================== */
     header {
-      background-color: #1e293b;
       padding: 12px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid #334155;
     }
     .logo {
       display: flex;
@@ -32,7 +79,7 @@
       gap: 10px;
       font-size: 20px;
       font-weight: 700;
-      color: #38bdf8;
+      color: #0284c7;
     }
     .badge {
       background-color: #059669;
@@ -43,22 +90,17 @@
       font-weight: 600;
     }
 
-    /* Layout */
     .container {
       display: flex;
       flex: 1;
       overflow: hidden;
     }
     
-    /* Sidebar */
     .sidebar {
       width: 380px;
-      background-color: #1e293b;
       padding: 20px;
       overflow-y: auto;
-      border-right: 1px solid #334155;
       display: flex;
-      flex-direction: flex;
       flex-direction: column;
       gap: 20px;
     }
@@ -67,31 +109,19 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #94a3b8;
       margin-bottom: 10px;
     }
 
-    /* Form Controls */
     .field-group { margin-bottom: 12px; }
-    label { display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; }
+    label { display: block; font-size: 13px; margin-bottom: 6px; }
     input, select {
       width: 100%;
-      background-color: #0f172a;
-      border: 1px solid #334155;
-      color: #f8fafc;
       padding: 10px 12px;
       border-radius: 6px;
       font-size: 14px;
     }
-    input:focus, select:focus {
-      outline: none;
-      border-color: #38bdf8;
-    }
 
-    /* Itinerary Box */
     .itinerary-card {
-      background-color: #0f172a;
-      border: 1px solid #334155;
       border-radius: 8px;
       padding: 16px;
     }
@@ -100,9 +130,8 @@
       justify-content: space-between;
       margin-bottom: 8px;
       font-size: 13px;
-      color: #94a3b8;
     }
-    .card-row span { color: #f8fafc; font-weight: 600; }
+    .card-row span { font-weight: 600; }
     
     .price-box {
       background-color: #0284c7;
@@ -131,15 +160,13 @@
     }
     .btn-pay:hover { background-color: #1d4ed8; }
 
-    /* Map */
     #map {
       flex: 1;
       height: 100%;
-      background-color: #090d16;
     }
   </style>
 </head>
-<body>
+<body class="theme-light">
 
   <header>
     <div class="logo">✈️ SkyRoute <span>Flight & Travel Booking</span></div>
@@ -149,6 +176,15 @@
   <div class="container">
     <div class="sidebar">
       <div>
+        <div class="field-group">
+          <label for="theme-select">🎨 App Theme</label>
+          <select id="theme-select" onchange="changeTheme()">
+            <option value="theme-light" selected>Light Mode (Default)</option>
+            <option value="theme-default">Slate Navy</option>
+            <option value="theme-dark">Dark Mode (OLED)</option>
+          </select>
+        </div>
+
         <div class="section-title">Find Flight Route</div>
 
         <div class="field-group">
@@ -190,90 +226,3 @@
       </div>
 
       <div class="itinerary-card">
-        <div class="section-title" style="margin-bottom:12px;">Flight Itinerary & Details</div>
-        <div class="card-row">Airline: <span id="summary-airline">--</span></div>
-        <div class="card-row">Cabin: <span id="summary-cabin">--</span></div>
-        
-        <div class="price-box">
-          <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">Total Ticket Fare</div>
-          <div class="price-amount" id="ticket-fare">$0.00</div>
-        </div>
-
-        <button class="btn-pay" onclick="alert('Ticket Reserved Successfully!')">💳 Pay Now & Reserve Ticket</button>
-      </div>
-    </div>
-
-    <div id="map"></div>
-  </div>
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-    // Initialize Dark Map
-    const map = L.map('map').setView([20, 0], 2);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap &copy; CARTO',
-      subdomains: 'abcd',
-      maxZoom: 19
-    }).addTo(map);
-
-    // Global Cabin Mapping
-    const globalAirlineCabins = {
-      "delta": ["Basic Economy", "Main Cabin", "Delta Comfort+", "Delta First Class", "Delta Premium Select", "Delta One"],
-      "british airways": ["Euro Traveller (Economy)", "World Traveller (Economy)", "World Traveller Plus (Premium Eco)", "Club Europe (Business)", "Club World (Business)", "First Class"],
-      "etihad": ["Economy Choice & Space", "Business Studio", "First Class Suite", "The Residence"],
-      "emirates": ["Economy Class", "Premium Economy", "Business Class", "First Class Private Suite"],
-      "qatar": ["Economy Class", "Business Class (Qsuite)", "First Class"],
-      "united": ["United Economy", "United Economy Plus", "United Premium Plus", "United First", "United Polaris Business"],
-      "singapore": ["Economy Class", "Premium Economy Class", "Business Class", "First Class", "Suites"]
-    };
-
-    const defaultCabins = ["Economy Class", "Premium Economy", "Business Class", "First Class"];
-
-    function handleAirlineChange() {
-      const inputVal = document.getElementById("airline-input").value.trim().toLowerCase();
-      const cabinSelect = document.getElementById("cabin-select");
-      const summaryAirline = document.getElementById("summary-airline");
-
-      cabinSelect.innerHTML = "";
-      summaryAirline.textContent = inputVal ? document.getElementById("airline-input").value : "--";
-
-      if (!inputVal) {
-        cabinSelect.disabled = true;
-        const defaultOption = document.createElement("option");
-        defaultOption.textContent = "Select an airline first...";
-        cabinSelect.appendChild(defaultOption);
-        return;
-      }
-
-      let matchedKey = Object.keys(globalAirlineCabins).find(key => inputVal.includes(key) || key.includes(inputVal));
-      let cabinsToLoad = matchedKey ? globalAirlineCabins[matchedKey] : defaultCabins;
-
-      cabinSelect.disabled = false;
-      cabinsToLoad.forEach(cabin => {
-        const option = document.createElement("option");
-        option.value = cabin;
-        option.textContent = cabin;
-        cabinSelect.appendChild(option);
-      });
-
-      updateTicketPrice();
-    }
-
-    function updateTicketPrice() {
-      const cabin = document.getElementById("cabin-select").value;
-      const summaryCabin = document.getElementById("summary-cabin");
-      const priceDisplay = document.getElementById("ticket-fare");
-
-      summaryCabin.textContent = cabin || "--";
-
-      // Simple mock pricing based on cabin type
-      let price = 450;
-      if (cabin.includes("Premium") || cabin.includes("Comfort") || cabin.includes("Plus")) price = 850;
-      if (cabin.includes("Business") || cabin.includes("Club") || cabin.includes("Polaris")) price = 2400;
-      if (cabin.includes("First") || cabin.includes("Residence") || cabin.includes("Suite")) price = 5200;
-
-      priceDisplay.textContent = `$${price.toLocaleString()}.00`;
-    }
-  </script>
-</body>
-</html>
