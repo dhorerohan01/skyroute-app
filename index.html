@@ -3,178 +3,252 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkyRoute - Global Cabin Finder</title>
+  <title>SkyRoute - Flight & Travel Booking</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f4f6f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
       display: flex;
-      justify-content: center;
-      padding: 40px 20px;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
     }
-    .card {
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 500px;
+
+    /* Header */
+    header {
+      background-color: #1e293b;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
     }
-    h2 {
-      margin-top: 0;
-      color: #0d6efd;
-      text-align: center;
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #38bdf8;
     }
-    .field {
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
+    .badge {
+      background-color: #059669;
+      color: #ffffff;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
       font-weight: 600;
-      margin-bottom: 8px;
     }
+
+    /* Layout */
+    .container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      width: 380px;
+      background-color: #1e293b;
+      padding: 20px;
+      overflow-y: auto;
+      border-right: 1px solid #334155;
+      display: flex;
+      flex-direction: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+
+    /* Form Controls */
+    .field-group { margin-bottom: 12px; }
+    label { display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; }
     input, select {
       width: 100%;
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      color: #f8fafc;
       padding: 10px 12px;
-      border: 1px solid #ced4da;
       border-radius: 6px;
-      font-size: 15px;
-      box-sizing: border-box;
+      font-size: 14px;
     }
     input:focus, select:focus {
       outline: none;
-      border-color: #0d6efd;
+      border-color: #38bdf8;
     }
-    .info-box {
-      margin-top: 15px;
+
+    /* Itinerary Box */
+    .itinerary-card {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .card-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    .card-row span { color: #f8fafc; font-weight: 600; }
+    
+    .price-box {
+      background-color: #0284c7;
+      border-radius: 6px;
       padding: 12px;
-      background-color: #e7f1ff;
-      border-left: 4px solid #0d6efd;
-      border-radius: 4px;
+      text-align: center;
+      margin-top: 12px;
+    }
+    .price-amount {
+      font-size: 24px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    
+    .btn-pay {
+      width: 100%;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
       font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+    .btn-pay:hover { background-color: #1d4ed8; }
+
+    /* Map */
+    #map {
+      flex: 1;
+      height: 100%;
+      background-color: #090d16;
     }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>Global Flight Route Finder</h2>
+  <header>
+    <div class="logo">✈️ SkyRoute <span>Flight & Travel Booking</span></div>
+    <div class="badge">Hosting Cost: $0.00</div>
+  </header>
 
-    <div class="field">
-      <label for="origin">Origin:</label>
-      <input type="text" id="origin" placeholder="e.g., JFK, London, Sydney">
+  <div class="container">
+    <div class="sidebar">
+      <div>
+        <div class="section-title">Find Flight Route</div>
+
+        <div class="field-group">
+          <label for="origin">Origin Hub</label>
+          <input type="text" id="origin" placeholder="Type departure city or IATA code...">
+        </div>
+
+        <div class="field-group">
+          <label for="destination">Destination Hub</label>
+          <input type="text" id="destination" placeholder="Type arrival city or IATA code...">
+        </div>
+
+        <div class="field-group">
+          <label for="airline-input">Airline</label>
+          <input 
+            type="text" 
+            id="airline-input" 
+            list="airline-list" 
+            placeholder="Type Airline (e.g. Etihad, BA, Delta)..."
+            oninput="handleAirlineChange()"
+          >
+          <datalist id="airline-list">
+            <option value="Delta Air Lines"></option>
+            <option value="British Airways"></option>
+            <option value="Etihad Airways"></option>
+            <option value="Emirates"></option>
+            <option value="Qatar Airways"></option>
+            <option value="United Airlines"></option>
+            <option value="Singapore Airlines"></option>
+          </datalist>
+        </div>
+
+        <div class="field-group">
+          <label for="cabin-select">Ticket Class / Cabin</label>
+          <select id="cabin-select" disabled onchange="updateTicketPrice()">
+            <option value="">Select an airline first...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="itinerary-card">
+        <div class="section-title" style="margin-bottom:12px;">Flight Itinerary & Details</div>
+        <div class="card-row">Airline: <span id="summary-airline">--</span></div>
+        <div class="card-row">Cabin: <span id="summary-cabin">--</span></div>
+        
+        <div class="price-box">
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">Total Ticket Fare</div>
+          <div class="price-amount" id="ticket-fare">$0.00</div>
+        </div>
+
+        <button class="btn-pay" onclick="alert('Ticket Reserved Successfully!')">💳 Pay Now & Reserve Ticket</button>
+      </div>
     </div>
 
-    <div class="field">
-      <label for="destination">Destination:</label>
-      <input type="text" id="destination" placeholder="e.g., LHR, Dubai, Tokyo">
-    </div>
-
-    <div class="field">
-      <label for="airline-input">Airline Name:</label>
-      <input 
-        type="text" 
-        id="airline-input" 
-        list="airline-list" 
-        placeholder="Type any airline (e.g. Delta, Etihad, Lufthansa)..."
-        oninput="handleAirlineChange()"
-      >
-      <datalist id="airline-list">
-        <option value="Delta Air Lines"></option>
-        <option value="British Airways"></option>
-        <option value="Etihad Airways"></option>
-        <option value="Emirates"></option>
-        <option value="Qatar Airways"></option>
-        <option value="United Airlines"></option>
-        <option value="American Airlines"></option>
-        <option value="Lufthansa"></option>
-        <option value="Air France"></option>
-        <option value="Singapore Airlines"></option>
-        <option value="Cathay Pacific"></option>
-        <option value="Qantas"></option>
-        <option value="Air India"></option>
-        <option value="KLM"></option>
-        <option value="ANA (All Nippon Airways)"></option>
-        <option value="Japan Airlines"></option>
-        <option value="Turkish Airlines"></option>
-        <option value="Virgin Atlantic"></option>
-        <option value="Korean Air"></option>
-        <option value="Air Canada"></option>
-        <option value="SWISS"></option>
-      </datalist>
-    </div>
-
-    <div class="field">
-      <label for="cabin-select">Cabin Class:</label>
-      <select id="cabin-select" disabled>
-        <option value="">Type an airline above first...</option>
-      </select>
-    </div>
-
-    <div id="status" class="info-box">
-      Start typing an airline name to load its specific cabin products!
-    </div>
+    <div id="map"></div>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Comprehensive database of global airlines and their cabin brand names
+    // Initialize Dark Map
+    const map = L.map('map').setView([20, 0], 2);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Global Cabin Mapping
     const globalAirlineCabins = {
       "delta": ["Basic Economy", "Main Cabin", "Delta Comfort+", "Delta First Class", "Delta Premium Select", "Delta One"],
-      "british airways": ["Euro Traveller (Short-haul Economy)", "World Traveller (Long-haul Economy)", "World Traveller Plus (Premium Economy)", "Club Europe (Short-haul Business)", "Club World (Long-haul Business)", "First Class"],
+      "british airways": ["Euro Traveller (Economy)", "World Traveller (Economy)", "World Traveller Plus (Premium Eco)", "Club Europe (Business)", "Club World (Business)", "First Class"],
       "etihad": ["Economy Choice & Space", "Business Studio", "First Class Suite", "The Residence"],
       "emirates": ["Economy Class", "Premium Economy", "Business Class", "First Class Private Suite"],
       "qatar": ["Economy Class", "Business Class (Qsuite)", "First Class"],
       "united": ["United Economy", "United Economy Plus", "United Premium Plus", "United First", "United Polaris Business"],
-      "american": ["Main Cabin", "Main Cabin Extra", "Premium Economy", "Flagship Business", "Flagship First", "Flagship Suite"],
-      "lufthansa": ["Economy Class", "Premium Economy", "Business Class", "First Class", "Allegris First Class"],
-      "air france": ["Economy", "Premium Economy", "Business Class", "La Première (First Class)"],
-      "singapore airlines": ["Economy Class", "Premium Economy Class", "Business Class", "First Class", "Suites"],
-      "cathay pacific": ["Economy Class", "Premium Economy", "Business Class (Aria Suite)", "First Class"],
-      "qantas": ["Economy", "Premium Economy", "Business Class", "First Class"],
-      "air india": ["Economy Class", "Premium Economy", "Executive Class (Business)", "First Class"],
-      "klm": ["Economy Class", "Premium Comfort", "World Business Class"],
-      "ana": ["Economy Class", "Premium Economy", "Business Class (The Room)", "First Class (The Suite)"],
-      "japan airlines": ["Economy Class", "Premium Economy", "Business Class", "First Class"],
-      "turkish": ["Economy Class", "Business Class"],
-      "virgin atlantic": ["Economy Light/Classic/Delight", "Premium", "Upper Class"],
-      "korean air": ["Economy Class", "Prestige Class (Business)", "First Class (Kosmo Suite)"],
-      "air canada": ["Economy Class", "Premium Economy", "Signature Class (Business)"],
-      "swiss": ["Economy Class", "Premium Economy", "Business Class", "First Class (SWISS First)"],
-      "ryanair": ["Standard Fare", "Regular", "Plus", "Flexi Plus"],
-      "easyjet": ["Standard Seat", "Up Front Seat", "Extra Legroom"],
-      "southwest": ["Basic", "Choice", "Choice Plus"]
+      "singapore": ["Economy Class", "Premium Economy Class", "Business Class", "First Class", "Suites"]
     };
 
-    // Generic fallback classes for unlisted airlines
-    const standardCabins = [
-      "Economy Class",
-      "Premium Economy",
-      "Business Class",
-      "First Class"
-    ];
+    const defaultCabins = ["Economy Class", "Premium Economy", "Business Class", "First Class"];
 
     function handleAirlineChange() {
       const inputVal = document.getElementById("airline-input").value.trim().toLowerCase();
       const cabinSelect = document.getElementById("cabin-select");
-      const statusBox = document.getElementById("status");
+      const summaryAirline = document.getElementById("summary-airline");
 
       cabinSelect.innerHTML = "";
+      summaryAirline.textContent = inputVal ? document.getElementById("airline-input").value : "--";
 
       if (!inputVal) {
         cabinSelect.disabled = true;
         const defaultOption = document.createElement("option");
-        defaultOption.textContent = "Type an airline above first...";
+        defaultOption.textContent = "Select an airline first...";
         cabinSelect.appendChild(defaultOption);
-        statusBox.textContent = "Start typing an airline name to load its specific cabin products!";
         return;
       }
 
-      // Check if input matches key in dataset
       let matchedKey = Object.keys(globalAirlineCabins).find(key => inputVal.includes(key) || key.includes(inputVal));
+      let cabinsToLoad = matchedKey ? globalAirlineCabins[matchedKey] : defaultCabins;
 
-      let cabinsToLoad = matchedKey ? globalAirlineCabins[matchedKey] : standardCabins;
       cabinSelect.disabled = false;
-
       cabinsToLoad.forEach(cabin => {
         const option = document.createElement("option");
         option.value = cabin;
@@ -182,13 +256,24 @@
         cabinSelect.appendChild(option);
       });
 
-      if (matchedKey) {
-        statusBox.textContent = `Loaded ${cabinsToLoad.length} custom branded cabin classes for ${inputVal.toUpperCase()}.`;
-      } else {
-        statusBox.textContent = `Loaded standard cabin options for "${inputVal}".`;
-      }
+      updateTicketPrice();
+    }
+
+    function updateTicketPrice() {
+      const cabin = document.getElementById("cabin-select").value;
+      const summaryCabin = document.getElementById("summary-cabin");
+      const priceDisplay = document.getElementById("ticket-fare");
+
+      summaryCabin.textContent = cabin || "--";
+
+      // Simple mock pricing based on cabin type
+      let price = 450;
+      if (cabin.includes("Premium") || cabin.includes("Comfort") || cabin.includes("Plus")) price = 850;
+      if (cabin.includes("Business") || cabin.includes("Club") || cabin.includes("Polaris")) price = 2400;
+      if (cabin.includes("First") || cabin.includes("Residence") || cabin.includes("Suite")) price = 5200;
+
+      priceDisplay.textContent = `$${price.toLocaleString()}.00`;
     }
   </script>
-
 </body>
 </html>
