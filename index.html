@@ -1,61 +1,173 @@
-function handleAirlineChange() {
-  const airlineInput = document.getElementById("airline-input");
-  const cabinSelect = document.getElementById("cabin-select");
-  const summaryAirline = document.getElementById("summary-airline");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyRoute - Custom Multi-Stop Flight Builder</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
 
-  const rawInput = airlineInput.value.trim();
-  const inputVal = rawInput.toLowerCase();
+    header { padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; border-bottom: 1px solid #e2e8f0; }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: #0284c7; }
+    .badge { background-color: #059669; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+    
+    .container { display: flex; flex: 1; overflow: hidden; }
+    .sidebar { width: 400px; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background-color: #ffffff; border-right: 1px solid #e2e8f0; }
+    .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; color: #64748b; }
+    
+    .field-group { margin-bottom: 10px; }
+    label { display: block; font-size: 13px; margin-bottom: 4px; color: #334155; font-weight: 600; }
+    input, select { width: 100%; padding: 9px 12px; border-radius: 6px; font-size: 14px; background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #0f172a; }
+    
+    .stop-input-wrapper { display: flex; gap: 6px; margin-bottom: 6px; }
+    .btn-remove { background: #ef4444; color: white; border: none; padding: 0 10px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .btn-add-stop { width: 100%; background: #e0f2fe; color: #0369a1; border: 1px stroke #0284c7; padding: 8px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; margin-top: 4px; }
+    .btn-add-stop:hover { background: #bae6fd; }
 
-  // Clear previous options
-  cabinSelect.innerHTML = "";
-  summaryAirline.textContent = rawInput || "--";
+    .itinerary-card { border-radius: 8px; padding: 14px; background-color: #f1f5f9; border: 1px solid #e2e8f0; }
+    .card-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: #64748b; }
+    .card-row span { font-weight: 600; color: #0f172a; }
+    .route-badge { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 12px; }
+    
+    .price-box { background-color: #0284c7; border-radius: 6px; padding: 10px; text-align: center; margin-top: 10px; }
+    .price-amount { font-size: 22px; font-weight: 800; color: #ffffff; }
+    
+    .btn-pay { width: 100%; background-color: #2563eb; color: white; border: none; padding: 10px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+    .btn-pay:hover { background-color: #1d4ed8; }
+    
+    #map { flex: 1; height: 100%; }
+  </style>
+</head>
+<body>
 
-  // If no text typed, disable cabin select
-  if (!rawInput) {
-    cabinSelect.disabled = true;
-    const defaultOption = document.createElement("option");
-    defaultOption.value = "";
-    defaultOption.textContent = "Type an airline above first...";
-    cabinSelect.appendChild(defaultOption);
-    updateTicketPrice();
-    return;
-  }
+  <header>
+    <div class="logo">✈️ SkyRoute <span>Flight & Travel Booking</span></div>
+    <div class="badge">Hosting Cost: $0.00</div>
+  </header>
 
-  // 1. Check if the typed airline matches any predefined brand
-  let matchedKey = Object.keys(globalAirlineCabins).find(key => 
-    inputVal.includes(key) || key.includes(inputVal)
-  );
+  <div class="container">
+    <div class="sidebar">
+      <div>
+        <div class="section-title">Find or Custom Build Route</div>
 
-  let cabinsToLoad = [];
+        <div class="field-group">
+          <label for="origin">Origin (Start City / Airport)</label>
+          <input type="text" id="origin" value="MSP" placeholder="e.g. MSP, New York, London..." onchange="updateFullRoute()">
+        </div>
 
-  if (matchedKey) {
-    cabinsToLoad = globalAirlineCabins[matchedKey];
-  } else {
-    // 2. Generic cabins for ANY typed airline name
-    const formattedName = rawInput.charAt(0).toUpperCase() + rawInput.slice(1);
-    cabinsToLoad = [
-      `${formattedName} Economy Class`,
-      `${formattedName} Premium Economy`,
-      `${formattedName} Business Class`,
-      `${formattedName} First Class`
-    ];
-  }
+        <div class="field-group">
+          <label>Layover / Stopover Cities (Optional)</label>
+          <div id="stops-container"></div>
+          <button class="btn-add-stop" onclick="addStopoverField()">+ Add Stopover City</button>
+        </div>
 
-  // Unlock select menu and populate options
-  cabinSelect.disabled = false;
+        <div class="field-group">
+          <label for="destination">Destination (End City / Airport)</label>
+          <input type="text" id="destination" value="BOM" placeholder="e.g. BOM, Tokyo, Sydney..." onchange="updateFullRoute()">
+        </div>
 
-  // Add default "Select Class" option
-  const placeholder = document.createElement("option");
-  placeholder.value = "";
-  placeholder.textContent = "-- Select Cabin Class --";
-  cabinSelect.appendChild(placeholder);
+        <div class="field-group">
+          <label for="airline-input">Airline(s)</label>
+          <input 
+            type="text" 
+            id="airline-input" 
+            list="airline-list" 
+            value="Delta / KLM"
+            placeholder="Type ANY Airline (e.g. Delta, Etihad, BA)..."
+            oninput="handleAirlineChange()"
+            onkeyup="handleAirlineChange()"
+          >
+          <datalist id="airline-list">
+            <option value="Delta Air Lines"></option>
+            <option value="British Airways"></option>
+            <option value="Etihad Airways"></option>
+            <option value="Emirates"></option>
+            <option value="Qatar Airways"></option>
+            <option value="United Airlines"></option>
+            <option value="KLM Royal Dutch Airlines"></option>
+          </datalist>
+        </div>
 
-  cabinsToLoad.forEach(cabin => {
-    const option = document.createElement("option");
-    option.value = cabin;
-    option.textContent = cabin;
-    cabinSelect.appendChild(option);
-  });
+        <div class="field-group">
+          <label for="cabin-select">Ticket Class / Cabin</label>
+          <select id="cabin-select" onchange="updateTicketPrice()">
+            </select>
+        </div>
+      </div>
 
-  updateTicketPrice();
-}
+      <div class="itinerary-card">
+        <div class="section-title" style="margin-bottom:10px;">Flight Itinerary & Details</div>
+        <div class="card-row">Flight Type: <span id="summary-stops" class="route-badge">Nonstop</span></div>
+        <div class="card-row">Full Flight Path: <span id="summary-path">MSP → BOM</span></div>
+        <div class="card-row">Carrier: <span id="summary-carrier">Delta / KLM</span></div>
+        <div class="card-row">Selected Cabin: <span id="summary-cabin">--</span></div>
+        
+        <div class="price-box">
+          <div style="font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; color:#ffffff;">Total Ticket Fare</div>
+          <div class="price-amount" id="ticket-fare">$0.00</div>
+        </div>
+
+        <button class="btn-pay" onclick="alert('Ticket Reserved Successfully!')">💳 Pay Now & Reserve Ticket</button>
+      </div>
+    </div>
+
+    <div id="map"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([20, 0], 2);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+
+    // Coordinate Lookup Database
+    const cityCoords = {
+      "MSP": [44.8848, -93.2223], "MINNEAPOLIS": [44.8848, -93.2223],
+      "AMS": [52.3105, 4.7683],   "AMSTERDAM": [52.3105, 4.7683],
+      "BOM": [19.0896, 72.8656],  "MUMBAI": [19.0896, 72.8656],
+      "LHR": [51.4700, -0.4543],  "LONDON": [51.4700, -0.4543],
+      "JFK": [40.6413, -73.7781],  "NEW YORK": [40.6413, -73.7781],
+      "DXB": [25.2532, 55.3657],  "DUBAI": [25.2532, 55.3657],
+      "AUH": [24.4330, 54.6511],  "ABU DHABI": [24.4330, 54.6511],
+      "CDG": [49.0097, 2.5479],   "PARIS": [49.0097, 2.5479],
+      "HND": [35.5494, 139.7798], "TOKYO": [35.5494, 139.7798],
+      "SYD": [-33.9399, 151.1753], "SYDNEY": [-33.9399, 151.1753]
+    };
+
+    const globalAirlineCabins = {
+      "delta": ["Basic Economy", "Main Cabin", "Delta Comfort+", "Delta First Class", "Delta Premium Select", "Delta One"],
+      "british airways": ["Euro Traveller", "World Traveller", "World Traveller Plus", "Club World", "First Class"],
+      "etihad": ["Economy Choice & Space", "Business Studio", "First Class Suite", "The Residence"],
+      "emirates": ["Economy Class", "Premium Economy", "Business Class", "First Class Private Suite"],
+      "qatar": ["Economy Class", "Business Class (Qsuite)", "First Class"],
+      "klm": ["Economy Class", "Premium Comfort", "World Business Class"]
+    };
+
+    let mapLayers = [];
+
+    // Add dynamic layover input field
+    function addStopoverField(value = "") {
+      const container = document.getElementById("stops-container");
+      const div = document.createElement("div");
+      div.className = "stop-input-wrapper";
+      
+      div.innerHTML = `
+        <input type="text" class="stop-input" value="${value}" placeholder="Layover city (e.g. AMS, Paris, Dubai)..." onchange="updateFullRoute()">
+        <button class="btn-remove" onclick="removeStopover(this)">✕</button>
+      `;
+      container.appendChild(div);
+      updateFullRoute();
+    }
+
+    function removeStopover(btn) {
+      btn
