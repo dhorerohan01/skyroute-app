@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkyRoute - Custom Multi-Stop Flight Builder</title>
+  <title>SkyRoute - Flight & Travel Booking</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,7 +32,7 @@
     
     .stop-input-wrapper { display: flex; gap: 6px; margin-bottom: 6px; }
     .btn-remove { background: #ef4444; color: white; border: none; padding: 0 10px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-    .btn-add-stop { width: 100%; background: #e0f2fe; color: #0369a1; border: 1px stroke #0284c7; padding: 8px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; margin-top: 4px; }
+    .btn-add-stop { width: 100%; background: #e0f2fe; color: #0369a1; border: 1px solid #0284c7; padding: 8px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; margin-top: 4px; }
     .btn-add-stop:hover { background: #bae6fd; }
 
     .itinerary-card { border-radius: 8px; padding: 14px; background-color: #f1f5f9; border: 1px solid #e2e8f0; }
@@ -155,7 +155,6 @@
 
     let mapLayers = [];
 
-    // Add dynamic layover input field
     function addStopoverField(value = "") {
       const container = document.getElementById("stops-container");
       const div = document.createElement("div");
@@ -170,4 +169,137 @@
     }
 
     function removeStopover(btn) {
-      btn
+      btn.parentElement.remove();
+      updateFullRoute();
+    }
+
+    function updateFullRoute() {
+      const origin = document.getElementById("origin").value.trim();
+      const destination = document.getElementById("destination").value.trim();
+      const stopElements = document.querySelectorAll(".stop-input");
+      
+      let stops = [];
+      stopElements.forEach(input => {
+        if (input.value.trim()) stops.push(input.value.trim());
+      });
+
+      let fullPath = [];
+      if (origin) fullPath.push(origin);
+      stops.forEach(s => fullPath.push(s));
+      if (destination) fullPath.push(destination);
+
+      const stopsSpan = document.getElementById("summary-stops");
+      const pathSpan = document.getElementById("summary-path");
+      
+      if (stops.length === 0) {
+        stopsSpan.textContent = "Nonstop Flight";
+        stopsSpan.style.background = "#dcfce7";
+        stopsSpan.style.color = "#15803d";
+      } else {
+        stopsSpan.textContent = `${stops.length}-Stop Connection`;
+        stopsSpan.style.background = "#e0f2fe";
+        stopsSpan.style.color = "#0369a1";
+      }
+
+      pathSpan.textContent = fullPath.length > 0 ? fullPath.join(" → ") : "--";
+
+      drawRouteOnMap(fullPath);
+      updateTicketPrice();
+    }
+
+    function drawRouteOnMap(cityList) {
+      mapLayers.forEach(layer => map.removeLayer(layer));
+      mapLayers = [];
+
+      let latLngs = [];
+      cityList.forEach(city => {
+        const key = city.toUpperCase();
+        if (cityCoords[key]) {
+          latLngs.push(cityCoords[key]);
+        }
+      });
+
+      if (latLngs.length >= 2) {
+        const isNonstop = latLngs.length === 2;
+        const polyline = L.polyline(latLngs, {
+          color: '#0284c7',
+          weight: 4,
+          dashArray: isNonstop ? '' : '8, 8'
+        }).addTo(map);
+        
+        mapLayers.push(polyline);
+
+        latLngs.forEach((coords, idx) => {
+          const marker = L.circleMarker(coords, { radius: 6, color: '#2563eb', fillColor: '#ffffff', fillOpacity: 1 }).addTo(map);
+          marker.bindPopup(`<b>${cityList[idx]}</b>`);
+          mapLayers.push(marker);
+        });
+
+        map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+      }
+    }
+
+    function handleAirlineChange() {
+      const rawInput = document.getElementById("airline-input").value.trim();
+      const inputVal = rawInput.toLowerCase();
+      const cabinSelect = document.getElementById("cabin-select");
+      const summaryCarrier = document.getElementById("summary-carrier");
+
+      cabinSelect.innerHTML = "";
+      summaryCarrier.textContent = rawInput || "--";
+
+      if (!rawInput) {
+        cabinSelect.disabled = true;
+        return;
+      }
+
+      let matchedKey = Object.keys(globalAirlineCabins).find(key => inputVal.includes(key) || key.includes(inputVal));
+      
+      let cabinsToLoad = [];
+      if (matchedKey) {
+        cabinsToLoad = globalAirlineCabins[matchedKey];
+      } else {
+        const formatted = rawInput.charAt(0).toUpperCase() + rawInput.slice(1);
+        cabinsToLoad = [
+          `${formatted} Economy Class`,
+          `${formatted} Premium Economy`,
+          `${formatted} Business Class`,
+          `${formatted} First Class`
+        ];
+      }
+
+      cabinSelect.disabled = false;
+      cabinsToLoad.forEach(cabin => {
+        const option = document.createElement("option");
+        option.value = cabin;
+        option.textContent = cabin;
+        cabinSelect.appendChild(option);
+      });
+
+      updateTicketPrice();
+    }
+
+    function updateTicketPrice() {
+      const cabin = document.getElementById("cabin-select").value || "";
+      const stopElements = document.querySelectorAll(".stop-input");
+      const numberOfStops = stopElements.length;
+      
+      const summaryCabin = document.getElementById("summary-cabin");
+      const priceDisplay = document.getElementById("ticket-fare");
+
+      summaryCabin.textContent = cabin || "Economy Class";
+
+      let basePrice = 500 + (numberOfStops * 250);
+      
+      if (cabin.includes("Premium") || cabin.includes("Comfort") || cabin.includes("Plus")) basePrice += 400;
+      if (cabin.includes("Business") || cabin.includes("Club") || cabin.includes("Polaris") || cabin.includes("Studio")) basePrice += 1800;
+      if (cabin.includes("First") || cabin.includes("Residence") || cabin.includes("Suite")) basePrice += 4000;
+
+      priceDisplay.textContent = `$${basePrice.toLocaleString()}.00`;
+    }
+
+    addStopoverField("AMS");
+    handleAirlineChange();
+  </script>
+</body>
+</html>
