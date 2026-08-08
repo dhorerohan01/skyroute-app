@@ -8,7 +8,6 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
-    /* Base Body Setup */
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       display: flex;
@@ -18,15 +17,8 @@
       transition: background-color 0.3s, color 0.3s;
     }
 
-    /* ===================================================
-       THEME STYLES (Light / Default Slate / Dark)
-       =================================================== */
-
-    /* 1. LIGHT THEME (Default) */
-    body.theme-light {
-      background-color: #f8fafc;
-      color: #0f172a;
-    }
+    /* THEMES */
+    body.theme-light { background-color: #f8fafc; color: #0f172a; }
     .theme-light header { background-color: #ffffff; border-bottom: 1px solid #e2e8f0; }
     .theme-light .sidebar { background-color: #ffffff; border-right: 1px solid #e2e8f0; }
     .theme-light input, .theme-light select { background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #0f172a; }
@@ -36,11 +28,7 @@
     .theme-light .section-title { color: #64748b; }
     .theme-light label { color: #334155; }
 
-    /* 2. SLATE NAVY THEME */
-    body.theme-default {
-      background-color: #0f172a;
-      color: #f8fafc;
-    }
+    body.theme-default { background-color: #0f172a; color: #f8fafc; }
     .theme-default header { background-color: #1e293b; border-bottom: 1px solid #334155; }
     .theme-default .sidebar { background-color: #1e293b; border-right: 1px solid #334155; }
     .theme-default input, .theme-default select { background-color: #0f172a; border: 1px solid #334155; color: #f8fafc; }
@@ -50,11 +38,7 @@
     .theme-default .section-title { color: #94a3b8; }
     .theme-default label { color: #cbd5e1; }
 
-    /* 3. DARK THEME (Pure OLED Black) */
-    body.theme-dark {
-      background-color: #000000;
-      color: #ffffff;
-    }
+    body.theme-dark { background-color: #000000; color: #ffffff; }
     .theme-dark header { background-color: #121212; border-bottom: 1px solid #27272a; }
     .theme-dark .sidebar { background-color: #121212; border-right: 1px solid #27272a; }
     .theme-dark input, .theme-dark select { background-color: #000000; border: 1px solid #27272a; color: #ffffff; }
@@ -64,106 +48,24 @@
     .theme-dark .section-title { color: #a1a1aa; }
     .theme-dark label { color: #d4d4d8; }
 
-    /* ===================================================
-       LAYOUT STYLES
-       =================================================== */
-    header {
-      padding: 12px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 20px;
-      font-weight: 700;
-      color: #0284c7;
-    }
-    .badge {
-      background-color: #059669;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .container {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-    
-    .sidebar {
-      width: 380px;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .section-title {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 10px;
-    }
-
+    /* LAYOUT */
+    header { padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: #0284c7; }
+    .badge { background-color: #059669; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+    .container { display: flex; flex: 1; overflow: hidden; }
+    .sidebar { width: 380px; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+    .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
     .field-group { margin-bottom: 12px; }
     label { display: block; font-size: 13px; margin-bottom: 6px; }
-    input, select {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-
-    .itinerary-card {
-      border-radius: 8px;
-      padding: 16px;
-    }
-    .card-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      font-size: 13px;
-    }
+    input, select { width: 100%; padding: 10px 12px; border-radius: 6px; font-size: 14px; }
+    .itinerary-card { border-radius: 8px; padding: 16px; }
+    .card-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
     .card-row span { font-weight: 600; }
-    
-    .price-box {
-      background-color: #0284c7;
-      border-radius: 6px;
-      padding: 12px;
-      text-align: center;
-      margin-top: 12px;
-    }
-    .price-amount {
-      font-size: 24px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-    
-    .btn-pay {
-      width: 100%;
-      background-color: #2563eb;
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 12px;
-    }
+    .price-box { background-color: #0284c7; border-radius: 6px; padding: 12px; text-align: center; margin-top: 12px; }
+    .price-amount { font-size: 24px; font-weight: 800; color: #ffffff; }
+    .btn-pay { width: 100%; background-color: #2563eb; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 12px; }
     .btn-pay:hover { background-color: #1d4ed8; }
-
-    #map {
-      flex: 1;
-      height: 100%;
-    }
+    #map { flex: 1; height: 100%; }
   </style>
 </head>
 <body class="theme-light">
@@ -203,26 +105,112 @@
             type="text" 
             id="airline-input" 
             list="airline-list" 
-            placeholder="Type Airline (e.g. Etihad, BA, Delta)..."
+            placeholder="Type ANY airline (e.g., Etihad, Delta, Air France)..."
             oninput="handleAirlineChange()"
           >
           <datalist id="airline-list">
-            <option value="Delta Air Lines"></option>
-            <option value="British Airways"></option>
             <option value="Etihad Airways"></option>
+            <option value="British Airways"></option>
+            <option value="Delta Air Lines"></option>
             <option value="Emirates"></option>
             <option value="Qatar Airways"></option>
             <option value="United Airlines"></option>
+            <option value="American Airlines"></option>
+            <option value="Lufthansa"></option>
+            <option value="Air France"></option>
             <option value="Singapore Airlines"></option>
+            <option value="Cathay Pacific"></option>
+            <option value="Qantas"></option>
+            <option value="Air India"></option>
+            <option value="KLM"></option>
+            <option value="ANA (All Nippon Airways)"></option>
+            <option value="Japan Airlines"></option>
+            <option value="Turkish Airlines"></option>
+            <option value="Virgin Atlantic"></option>
+            <option value="Swiss International Air Lines"></option>
+            <option value="Korean Air"></option>
+            <option value="Air Canada"></option>
+            <option value="Alaska Airlines"></option>
+            <option value="JetBlue"></option>
+            <option value="Ryanair"></option>
+            <option value="easyJet"></option>
           </datalist>
         </div>
 
         <div class="field-group">
           <label for="cabin-select">Ticket Class / Cabin</label>
           <select id="cabin-select" disabled onchange="updateTicketPrice()">
-            <option value="">Select an airline first...</option>
+            <option value="">Type an airline above first...</option>
           </select>
         </div>
       </div>
 
       <div class="itinerary-card">
+        <div class="section-title" style="margin-bottom:12px;">Flight Itinerary & Details</div>
+        <div class="card-row">Airline: <span id="summary-airline">--</span></div>
+        <div class="card-row">Cabin: <span id="summary-cabin">--</span></div>
+        
+        <div class="price-box">
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; color:#ffffff;">Total Ticket Fare</div>
+          <div class="price-amount" id="ticket-fare">$0.00</div>
+        </div>
+
+        <button class="btn-pay" onclick="alert('Ticket Reserved Successfully!')">💳 Pay Now & Reserve Ticket</button>
+      </div>
+    </div>
+
+    <div id="map"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Initialize Map
+    const map = L.map('map').setView([20, 0], 2);
+    const darkMapTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap' });
+    const lightMapTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap' });
+
+    lightMapTile.addTo(map);
+
+    function changeTheme() {
+      const selectedTheme = document.getElementById("theme-select").value;
+      document.body.className = selectedTheme;
+      if (selectedTheme === "theme-light") {
+        map.removeLayer(darkMapTile);
+        lightMapTile.addTo(map);
+      } else {
+        map.removeLayer(lightMapTile);
+        darkMapTile.addTo(map);
+      }
+    }
+
+    // Extensive Database of Official Branded Cabins
+    const globalAirlineCabins = {
+      "etihad": ["Economy Choice & Space", "Business Studio", "First Class Suite", "The Residence"],
+      "british airways": ["Euro Traveller (Short-haul Eco)", "World Traveller (Long-haul Eco)", "World Traveller Plus (Premium Eco)", "Club Europe (Short-haul Business)", "Club World (Long-haul Business)", "First Class"],
+      "delta": ["Basic Economy", "Main Cabin", "Delta Comfort+", "Delta First Class", "Delta Premium Select", "Delta One"],
+      "emirates": ["Economy Class", "Premium Economy", "Business Class", "First Class Private Suite"],
+      "qatar": ["Economy Class", "Business Class (Qsuite)", "First Class"],
+      "united": ["United Economy", "United Economy Plus", "United Premium Plus", "United First", "United Polaris Business"],
+      "american": ["Main Cabin", "Main Cabin Extra", "Premium Economy", "Flagship Business", "Flagship First", "Flagship Suite"],
+      "lufthansa": ["Economy Class", "Premium Economy", "Business Class", "First Class", "Allegris First Class"],
+      "air france": ["Economy", "Premium Economy", "Business Class", "La Première (First Class)"],
+      "singapore": ["Economy Class", "Premium Economy Class", "Business Class", "First Class", "Suites"],
+      "cathay": ["Economy Class", "Premium Economy", "Business Class (Aria Suite)", "First Class"],
+      "qantas": ["Economy", "Premium Economy", "Business Class", "First Class"],
+      "air india": ["Economy Class", "Premium Economy", "Executive Class (Business)", "First Class"],
+      "klm": ["Economy Class", "Premium Comfort", "World Business Class"],
+      "ana": ["Economy Class", "Premium Economy", "Business Class (The Room)", "First Class (The Suite)"],
+      "japan airlines": ["Economy Class", "Premium Economy", "Business Class", "First Class"],
+      "turkish": ["Economy Class", "Business Class"],
+      "virgin atlantic": ["Economy Light/Classic/Delight", "Premium", "Upper Class"],
+      "swiss": ["Economy Class", "Premium Economy", "Business Class", "First Class (SWISS First)"],
+      "korean air": ["Economy Class", "Prestige Class (Business)", "First Class (Kosmo Suite)"],
+      "air canada": ["Economy Class", "Premium Economy", "Signature Class (Business)"],
+      "alaska": ["Main Cabin", "Premium Class", "First Class"],
+      "jetblue": ["Core Economy", "Even More Space", "Mint (Business)"],
+      "ryanair": ["Standard Fare", "Regular", "Plus", "Flexi Plus"],
+      "easyjet": ["Standard Seat", "Up Front Seat", "Extra Legroom"]
+    };
+
+    function handleAirlineChange() {
+      const rawInput = document.getElementById("
